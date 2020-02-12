@@ -1,3 +1,4 @@
+#exercise 1
 nuseq=seq(175,185,by=0.25)
 
 
@@ -49,4 +50,22 @@ legend(178.7, 0.9, c('a) n = 30, sd = 5', 'b) n = 100, sd=5', 'c) n = 30, sd = 1
        lwd=c(5,3), col=c("blue", "red", "green"))
 
 
+# exercise 3
+telephone = read.table('telephone.txt', header=T)
+med = median(telephone$Bills)
 
+lamdaseq = seq(0.01, 0.1, by = 0.002)
+A = numeric(length(lamdaseq))
+
+for (i in 1:length(lamdaseq)){
+  B = numeric(1000)
+  lambda = lamdaseq[i]
+  for (j in 1:length(B)){
+    sample = rexp(1000, lambda)
+    B[j] = median(sample)
+  }
+
+  A[i] = (length(B[B<med])/length(B))
+}
+
+plot(lamdaseq[1:length(lamdaseq)-1], diff(A), type='l')
