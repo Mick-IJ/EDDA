@@ -69,3 +69,26 @@ for (i in 1:length(lamdaseq)){
 }
 
 plot(lamdaseq[1:length(lamdaseq)-1], diff(A), type='l')
+
+B = numeric(1000)
+for (j in 1:length(B)){
+  sample = rexp(200, 0.026)
+  B[j] = median(sample)
+}
+
+B25 = quantile(B, 0.025)
+B975 = quantile(B, 0.975)
+med = median(B)
+
+ciB = c(2*med - B975, 2*med - B25)
+
+
+B = numeric(1000)
+for (j in 1:length(B)){
+  sample = rexp(200, 0.026)
+  B[j] = median(sample)
+}
+
+pl = sum(B < 40) / 1000
+pr = sum(B > 40) / 1000
+p = 2*min(pl,pr)
