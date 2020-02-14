@@ -216,17 +216,17 @@ legend(400, 0.4, c('sunflower', 'meatmeal'),
        lwd=c(4,3), col=c("red", "blue"))
 
 #b)
-feedtypes = c('sunflower', 'meatmeal', 'horsebean', 'linseed', 'soybean', 'casein')
 contrasts(chickwts$feed) = contr.sum
-chickwtsaov = lm(weight~feed, data=chickwts)
+chickwtsaov = lm(chickwts$weight~chickwts$feed)
 anova(chickwtsaov)
 summary(chickwtsaov)
 
-par(mfrow=c(2,3))
-for (i in 1:6){
-  data = chickwts$weight[which(chickwts$feed==feedtypes[i])]
-  boxplot(data, main=feedtypes[i], ylim=c(150,400))
-  }
+par(mfrow=c(1,1)); boxplot(chickwts$weight~chickwts$feed)
 
 #c)
+feedtypes = c('casein','horsebean', 'linseed', 'meatmeal', 'soybean', 'sunflower')
+par(mfrow=c(2,3)); for (i in 1:6) qqnorm(chickwts$weight[which(chickwts$feed==feedtypes[i])], main = feedtypes[i])
+par(mfrow=c(1,1)); qqnorm(residuals(chickwtsaov)) #check normality of residuals
 
+#d)
+kruskal.test(chickwts$weight~chickwts$feed)
