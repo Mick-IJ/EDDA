@@ -55,8 +55,8 @@ legend(178.7, 0.9, c('a) n = 30, sd = 5', 'b) n = 100, sd=5', 'c) n = 30, sd = 1
 #load data and compute to km/sec from the same scale
 light1879= read.table("light1879.txt",header=TRUE)
 all1879 = c(light1879$X850, light1879$X740, light1879$X900, light1879$X1070, light1879$X930) +299000
-light1882 <- read_table2("light1882.txt", header = FALSE)
-all1882 = c(light1882$X1, light1882$X2, light1882$X3, light1882$X4, light1882$X5) +299000
+light1882 <- read.table("light1882.txt", header = FALSE, fill=TRUE)
+all1882 = c(light1882$V1, light1882$V2, light1882$V3, light1882$V4, light1882$V5) +299000
 all1882 <- all1882[!is.na(all1882)] #remove NA
 light = read.table('light.txt', header=TRUE)
 light = 7442000/(24.8+(light$X28/1000))
@@ -94,11 +94,13 @@ ciLight = c(2*mean(light) - light975, 2*mean(light) - light25)
 # EXERCISE 3
 telephone = read.table('telephone.txt', header=T)
 med = median(telephone$Bills)
-par(mfrow = c(1,2))
+par(mfrow = c(1,3))
 hist(telephone$Bills) # inconsistency: weird shape
 boxplot(telephone$Bills)
+qqnorm(telephone$Bills)
 
 #b)
+par(mfrow = c(1,1))
 lamdaseq = seq(0.01, 0.1, by = 0.002)
 A = numeric(length(lamdaseq))
 
@@ -113,7 +115,8 @@ for (i in 1:length(lamdaseq)){
   A[i] = (length(B[B<med])/length(B))
 }
 
-plot(lamdaseq[1:length(lamdaseq)-1], diff(A), type='l')
+plot(lamdaseq, c(diff(A), 0), type='l')
+
 
 # Construct a 95% bootstrap confidence interval for the population median of the sample.
 #computing surrogate dataset, compute T for surrogate dataset
@@ -165,24 +168,65 @@ mean(Tstar)
 run = read.table('run.txt', header=TRUE)
 #a)
 cor.test(run$before,run$after) #Conclusion: there is significant correlation, if normality is assumed.
+par(mfrow=c(1, 2))
 qqnorm(run$before, main = "qq plot before") #Check the normality assumption on the two samples
 qqnorm(run$after, main = "qq plot after") #conclusion: normality assumed
 
 #b)
+par(mfrow=c(1, 1))
 t.test(run$before[1:12], run$after[1:12], paired = T) #softdrink
 qqnorm(run$before[1:12]-run$after[1:12]) #Check the normality assumption on the differences, normal?
-#Conclusion: p = 0.4373 
+#Conclusion: p = 0.4373, so no difference in the soft drink condition
 t.test(run$before[13:24], run$after[13:24], paired = T) #energydrink
 qqnorm(run$before[13:24]-run$after[13:24]) #not normal?
-#Conclusion: p = 0.1264
+#Conclusion: p = 0.1264, also no difference in energy drink condition
+
+#c)
+difference = run$before - run$after #positive values mean faster times
+t.test(difference[1:12], difference[13:24])
+#Conclusion: p = 0.1586, so the drinks do not affect difference in times
+
+#d)?
 
 
+## EXERCISE 5
 
+#a)
+t.test(chickwts$weight[which(chickwts$feed=='sunflower')], 
+       chickwts$weight[which(chickwts$feed=='meatmeal')])
+#Conclusion: p = 0.044, so there is a significant difference --> meatmeal lower weight
 
+wilcox.test(chickwts$weight[which(chickwts$feed=='sunflower')], 
+            chickwts$weight[which(chickwts$feed=='meatmeal')])
+#Conclusion: p = 0.069, so there is no significant difference
 
+ks.test(chickwts$weight[which(chickwts$feed=='sunflower')], 
+        chickwts$weight[which(chickwts$feed=='meatmeal')])
+#Conclusion: p = 0.109, so there is no significant difference
 
+#plot for KS
+par(mfrow=c(1,2))
+hist(chickwts$weight[which(chickwts$feed=='sunflower')])
+hist(chickwts$weight[which(chickwts$feed=='meatmeal')])
+par(mfrow=c(1,1))
+plot(ecdf(chickwts$weight[which(chickwts$feed=='sunflower')]), col='red', 
+     main='Cumulative density of feed types', xlab='Weight', ylab='Cumulative Probability')
+lines(ecdf(chickwts$weight[which(chickwts$feed=='meatmeal')]), col='blue')
+legend(400, 0.4, c('sunflower', 'meatmeal'), 
+       lwd=c(4,3), col=c("red", "blue"))
 
+#b)
+feedtypes = c('sunflower', 'meatmeal', 'horsebean', 'linseed', 'soybean', 'casein')
+contrasts(chickwts$feed) = contr.sum
+chickwtsaov = lm(weight~feed, data=chickwts)
+anova(chickwtsaov)
+summary(chickwtsaov)
 
+par(mfrow=c(2,3))
+for (i in 1:6){
+  data = chickwts$weight[which(chickwts$feed==feedtypes[i])]
+  boxplot(data, main=feedtypes[i], ylim=c(150,400))
+  }
 
-
+#c)
 
