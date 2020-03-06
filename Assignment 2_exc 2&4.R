@@ -26,11 +26,11 @@ interaction.plot(interface, skill, time, col = c('red', 'green', 'blue', 'yellow
 # First the distribution of the dependent variable is shown in a histogram and qq-plot.
 # The data looks normally distributed. Next two boxplots are created to visualize the effect that the indpendent variables
 # skill and interface have on the time required to finish the task. Overall the students with a lower skill level (better skills)
-# are quicker than students with a high skill rank. Furthermore, the use of interface 1 seems to result in lower times.
+# seem to be faster than students with a high skill rank. Furthermore, the use of interface 1 seems to result in lower times.
 # Lastly two interaction plots are created. These show that there are no obvious interaction effects. 
 # However, the previous statements are made based on the visualization of the data. No test have been used to underline these
-# statements. Lastly, any possible interaction effects cannot be reliably tested, because there is only one observation
-# for each combination of factors.
+# statements. Besides, any possible interaction effects cannot be reliably tested, because there is only one observation
+# for each of factors.
 
 
 #c) Show only the output of anova
@@ -44,7 +44,7 @@ summary(dataaov)
 # To test whether interface has a main effect on the time it takes to complete the task an anova was carried out with
 # both interface and skill as independent variables. No interaction effect was taken into account. Results show that both
 # interface, F(2,8)=7.82, p = 0.013, and skill, F(4,8)=6.21, p = 0.014, have a significant main effect. 
-# Therefore the search time is not equal for all of the interfaces.To compute the estimated time it takes for a user with 
+# Therefore the search time is not equal for all of the interfaces. To compute the estimated time it takes for a user with 
 # skill level 3 who uses interface 2 the summary of the anova was used. This results in an estimated time of 
 # (20.5467 + 0.3133 + -0.1133) 20.7467.
 
@@ -72,10 +72,10 @@ summary(dataaov2)
 # When carrying out an analysis of variance with only the interface as independent variable, the results indicate
 # that there is no significant effect of interface, F(2,12)=2.86, p = 0.096 on the time it takes to complete the task.
 # It could make sense to carry out this test, however in the current context it is wrong. This is because earlier tests,
-# as well as the visualization of the data indicate an significant effect of skill. Therefore, it is unwise to remove this
+# as well as the visualization of the data indicate a significant effect of skill. Therefore, it is unwise to remove this
 # factor from the analysis. For this test to be valid, tests and visualization should have indicated that there is no
 # effect of skill on the dependent variable. If there is no effect of skill it would not matter if it was used as a factor
-# in the analysis. Since this is no the case, it is unwise to carry out and interpret the results of this analysis.
+# in the analysis. Since this is not the case, it is unwise to carry out and interpret the results of this analysis.
 
 
 ## Question 4
