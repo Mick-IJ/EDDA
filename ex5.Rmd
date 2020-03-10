@@ -1,0 +1,157 @@
+---
+title: "ex5"
+output: pdf_document
+---
+\usepackage{newunicodechar}
+\newunicodechar{ﬁ}{fi}
+\newunicodechar{ﬀ}{ff}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exercise 5
+a)\newline
+```{r, echo = FALSE}
+crimetable = read.table('expensescrime.txt', header = T)
+attach(crimetable)
+par(mfrow= c(2,3))
+qqnorm(expend); qqnorm(bad); qqnorm(crime); qqnorm(lawyers); qqnorm(employ); qqnorm(pop)
+par(mfrow= c(2,3))
+hist(expend); hist(bad); hist(crime); hist(lawyers); hist(employ); hist(pop)
+#to check collinearity
+pairs(crimetable)
+round(cor(crimetable[2:7]),2)
+```
+
+To inspect the distribution of the data and to find outliers, a QQ-plot and histogram were computed for all variables. In addition a pairwise plot of all variables is set up and the correlation between all variables is computed, this to check for the collinearity problem. As you can see in the QQ-plots and histograms, only the factor crime seems to be normally distributed. There also seems to be an outlier in the data. Many variables seem to be correlated with each other as well, which will result in a problem of collinearity. To fix these problems, the data was further inspected and the outlier (row 8, the data from state DC) was removed from the dataset and the variables expend, crime, lawyers and employ were devided by the population in order to normalize for the populationrate. The same graphs and correlationvalues were computed with the new data. Results can be seen below. It can be seen that .......
+```{r, echo=FALSE}
+#to check distribution
+crimetable2 = crimetable[-c(1,8),]
+crimetable2$expend = crimetable2$expend / crimetable2$pop
+crimetable2$lawyers = crimetable2$lawyers / crimetable2$pop
+crimetable2$crime = crimetable2$crime / crimetable2$pop
+crimetable2$employ = crimetable2$employ / crimetable2$pop
+
+# we see outlier row 8 -> remove
+attach(crimetable2)
+par(mfrow= c(2,3))
+qqnorm(expend); qqnorm(bad); qqnorm(crime); qqnorm(lawyers); qqnorm(employ); qqnorm(pop)
+par(mfrow= c(2,3))
+hist(expend); hist(bad); hist(crime); hist(lawyers); hist(employ); hist(pop)
+#to check collinearity
+pairs(crimetable2)
+round(cor(crimetable2[2:7]),2)
+```
+
+
+
+
+
+b)\newline
+```{r, include=FALSE}
+attach(crimetable2)
+par(mfrow = c (1,1))
+boxplot(crimetable2)
+#step-up method
+summary(lm(expend~bad,data=crimetable2)) #r2 = 0.6964 #0.09194 
+summary(lm(expend~crime,data=crimetable2)) #r2 = 0.1119 #0.03205
+summary(lm(expend~lawyers,data=crimetable2)) #r2 = 0.9373 #0.4136
+summary(lm(expend~employ,data=crimetable2)) # r2 = 0.954 #0.6366
+summary(lm(expend~pop,data=crimetable2)) # r2 = 0.9073 #0.1399
+#highest r2 = employ, and add all the others and look for highest again
+summary(lm(expend~employ+lawyers,data=crimetable2)) #r2= 0.9632 and sign.#0.6907 and sign
+summary(lm(expend~employ+bad,data=crimetable2)) # r2 0.9551 and not sign. #not sign
+summary(lm(expend~employ+crime,data=crimetable2)) #r2 = 0.9551 and not sign.#not sign
+summary(lm(expend~employ+pop,data=crimetable2)) #r2 = 0.9543 and not sign.#not sign
+#highest R2 = lawyers and only significant, so add this one. 
+summary(lm(expend~employ+lawyers+bad,data=crimetable2)) #r2= 0.9632 and sign.#0.6907 and sign
+summary(lm(expend~employ+lawyers+crime,data=crimetable2)) # r2 0.9551 and not sign. #not sign
+summary(lm(expend~employ+lawyers+pop,data=crimetable2)) #r2 = 0.9551 and not sign.#not sign
+#new: stop with employ and lawyers cause nothing significant
+```
+```{r}
+summary(lm(expend~employ+lawyers,data=crimetable2))
+```
+```{r, include=FALSE}
+attach(crimetable2)
+#step-down method
+summary(lm(expend~bad+crime+lawyers+employ+pop,data=crimetable2))
+#crime is most insiginificant, so take out #new: bad most insignificant
+summary(lm(expend~crime+lawyers+employ+pop,data=crimetable2))
+#pop out #new: everything significant! stop!
+summary(lm(expend~bad+lawyers+employ,data=crimetable))
+#bad out
+summary(lm(expend~lawyers+employ,data=crimetable))
+#significant, same answer as step-up
+```
+
+Both step-up and step-down methods are carried out, to find the best model.
+The step-up method resulted in the signiﬁcant explanatory variables 'employ' and 'lawyers'.
+(waardes geven? F-statistic: 627.7 on 2 and 48 DF,  p-value: < 2.2e-16, R-squared:  0.9632).
+The resulting model of the step-up method is: expend = -1.107e+02 + 2.971e-02*employ - 2.686e-02*lawyers + error.
+
+The step-down method resulted in the same signiﬁcant explanatory variables, so the two methods yield the same model.
+
+c)\newline
+```{r, echo=FALSE}
+# 1. scatter plot: plot Y against each Xk separately (this yields overall picture, and shows outlying values)
+#see a)
+```
+```{r, echo=FALSE}
+#2.Scatter plot of residuals against eachXkin the model separately.
+par(mfrow = c (1,5))
+badlm = lm(expend~bad); plot(residuals(badlm),bad)
+crimelm = lm(expend~crime); plot(residuals(crimelm),crime)
+lawyerslm = lm(expend~lawyers); plot(residuals(lawyerslm),lawyers)
+employlm = lm(expend~employ); plot(residuals(employlm),employ)
+poplm = lm(expend~pop); plot(residuals(poplm),pop)
+
+```
+
+```{r}
+#3.Added variable plot of residuals of Xj against residuals of Y with omitted Xj.
+#DOES ORDER MATTER?
+par(mfrow = c (2,3))
+#bad
+x=residuals(lm(bad~crime+lawyers+employ+pop)) 
+y=residuals(lm(expend~crime+lawyers+employ+pop)) 
+plot(x,y,main="Added variable plot for bad", xlab="residual of bad", ylab="residual of expend")
+#crime
+x=residuals(lm(crime~lawyers+employ+pop+bad)) 
+y=residuals(lm(expend~bad+lawyers+employ+pop)) 
+plot(x,y,main="Added variable plot for crime", xlab="residual of crime", ylab="residual of expend")
+#lawyers
+x=residuals(lm(lawyers~crime+employ+pop+bad)) 
+y=residuals(lm(expend~bad+crime+employ+pop)) 
+plot(x,y,main="Added variable plot for lawyers", xlab="residual of lawyers", ylab="residual of expend")
+#employ
+x=residuals(lm(employ~lawyers+crime+pop+bad)) 
+y=residuals(lm(expend~bad+lawyers+crime+pop)) 
+plot(x,y,main="Added variable plot for employ", xlab="residual of employ", ylab="residual of expend")
+#pop
+x=residuals(lm(pop~lawyers+employ+crime+bad)) 
+y=residuals(lm(expend~bad+lawyers+employ+crime)) 
+plot(x,y,main="Added variable plot for pop", xlab="residual of pop", ylab="residual of expend")
+```
+
+```{r}
+#4.Scatter plot of residuals against eachXknot inthe model separately. #plot(residuals(bodyfatlm),Triceps)> plot(residuals(bodyfatlm),Midarm)
+expendlm = lm(expend~lawyers+employ,data=crimetable2)
+par(mfrow = c(1,3))
+plot(residuals(expendlm), bad)
+plot(residuals(expendlm), crime)
+plot(residuals(expendlm), pop)
+```
+```{r}
+#5.Scatter plot of residuals againstY(andˆY).> 
+plot(residuals(expendlm),expend)
+plot(residuals(expendlm),fitted(expendlm))
+```
+
+
+```{r}
+#6.NormalQQ-plot of the residuals. 
+qqnorm(residuals(expendlm))
+shapiro.test(residuals(expendlm))
+```
+
