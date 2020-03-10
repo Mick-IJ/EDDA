@@ -1,0 +1,356 @@
+---
+title: "EDDA assignment 2"
+output: pdf_document
+author: "Mick IJzer, Tirza IJpma, Maud van den Berg"
+date: \today
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width=6, fig.height=4) 
+```
+
+## Exercise 1 
+
+a)\newline  
+To randomize 18 slices of loaf into 6 different combinations (3 temperatures, 2 humidities) the following code in R can be used:
+```{r}
+temp=3; hum=2; N=3 
+rbind(rep(1:temp,each=N*hum),rep(1:hum,N*temp),sample(1:(N*temp*hum)))
+```
+To interpret this table: each column can be seen as a different unit(where the id of the unit is the value in the third row), the first row can be seen as which temperature the unit has to be measured in and the second row can be seen as the humidity group of the unit. 
+\newpage
+
+b)\newline 
+```{r, echo=FALSE}
+bread <- read.table("bread.txt", header = TRUE)
+attach(bread)
+par(mfrow=c(1,2))
+boxplot(hours~environment, main = "Effect of environment")
+boxplot(hours~humidity, main = "Effect of humidity")
+```
+ 
+```{r, echo=FALSE}
+par(mfrow=c(1,2))
+interaction.plot(environment, humidity, hours, col=c("black", "black"), legend= FALSE, lwd = 2, cex.lab= 1.0, cex.axis = 0.8, lty = 1:2, main = "Environment vs. humidity")
+legend(0.9, 120, legend=c("Dry", "Wet"),col=c("black", "black"), lty=1:2, cex=0.6)
+interaction.plot(humidity, environment, hours, col=c("black", "black", "black"), legend= FALSE, lwd = 2, cex.lab= 1.0, cex.axis = 0.8, lty = 1:3, main = "Humidity vs. environment")
+legend(0.9, 135, legend=c("Cold", "Intermediate", "Warm"),col=c("black", "black","black"), lty=1:3, cex=0.6)
+```
+
+ 
+```{r include=FALSE}
+hoursaov=lm(hours~environment*humidity); anova(hoursaov); summary(hoursaov)
+contrasts(environment)=contr.sum; contrasts(humidity)=contr.sum 
+hoursaov2 =lm(hours~environment*humidity); summary(hoursaov2)
+```
+c)\newline
+After performing a one way ANOVA test, the following results were obtained: the factor environment has a significant main effect on the time to decay,  F = 233.69, p < .000. Also the type of humidity has a significant main effect on the time to decay, F = 62.30, p < .000. There is a significant effect for the interaction of the factors on the time to decay as well, F = 64.80, p < .000. To interpret these results, the assumptions of the ANOVA are considered to be satisfied. In question e the ANOVA assumptions are checked. 
+
+When inspecting the graphical representation of the interaction effect, the interaction of humidity vs. environment (right graph) shows the differences clearly. It can be seen that for both the intermediate and warm environment the mean of hours decreases when going from a dry to a wet humidity. For a cold environment this effect has the opposite direction, namely an increase in mean of hours when the humidity changes from dry to wet.
+
+d)\newline 
+When interpreting the results of the ANOVA, it can be seen that environment probably(?) has the most influence on the hours to decay. This can be known through the bigger F-value of the ANOVA as you can see in question c. Which is explained by a higher value for the explained mean of squares for environment (100952) than humidity (26912). 
+This is not a good question, because there is a significant effect for the interaction between the two factors. So the effect on one factor depends on the value of the other factor. If there was no significant interaction, this would have been a good question.
+
+e)\newline  
+To check the normality and the assumption of equal variances of the ANOVA, a QQ-plot of the residuals is computed. In addition also the fitted values are plotted:\newline 
+
+```{r, echo=FALSE}
+par(mfrow=c(1,2))
+qqnorm(residuals(hoursaov2),cex.lab= 1.0, cex.axis = 0.6, main = "QQ-plot residuals"); 
+plot(fitted(hoursaov2),residuals(hoursaov2), cex.lab= 1.0, cex.axis = 0.6, main = "Residuals against fitted values")
+```
+```{r, include=FALSE}
+shapiro.test(residuals(hoursaov2))
+```
+
+The residuals (the data corrected for the different population means) seem to be normally distributed. Performing the Shapiro-Wilk test confirms this (W = 0.930, p-value = 0.191). Also in the fitted data it can be seen that the spread in the residuals doesn't change systematically when the number of hours increases. Since the 18 bread units are independently measured, it can be stated that the assumptions for the ANOVA are satisfied. 
+
+There seem to be two outliers with the predicted value of approximately 240 hours. The actual value is very different from the predicted value. This is probably caused by the large variations in hours to decay in the intermediate-dry condition. 
+
+\newpage
+## Exercise 2
+```{r, echo=FALSE}
+data = read.table(file="search.txt",header=TRUE)
+data$skill = factor(data$skill)
+data$interface = factor(data$interface)
+```
+
+a)\newline 
+A randomizied block design was used to distribute the 15 students over the 3 possible interfaces. Because both the student ID and the skill level are fixed, only the interface had to be evenly distributed over the students. 
+The code below shows that step. There are three students in each skill-level category, and since there are 3 possible interfaces, every one of those three students should be assigned a different interface. 
+In the output the randomized assignment of students to each interface is shown. The first row indicates the interface, the second row shows the skill level of the students. And the third row represents the ids of the students. Each column corresponds to a student.
+```{r}
+rbind(c(replicate(5, sample(1:3))),rep(1:5,each=3), rep(1:15)) 
+```
+
+b)\newline
+```{r echo=FALSE}
+attach(data)
+par(mfrow=c(1,2)); hist(time); qqnorm(time)
+par(mfrow=c(1,2))
+boxplot(time~skill, main = "Effect of skill"); boxplot(time~interface, main = "Effect of interface")
+par(mfrow=c(1,2))
+interaction.plot(skill, interface, time, col = c('red', 'green', 'blue'), main = "Skill vs. interface")
+interaction.plot(interface, skill, time, col = c('red', 'green', 'blue', 'yellow', 'black'), main = "Interface vs. skill")
+```
+
+First the distribution of the dependent variable is shown in a histogram and QQ-plot. The data looks normally distributed. Next two boxplots are created to visualize the effect that the independent variables skill and interface have on the time required to finish the task. Overall the students with a lower skill level (better skills) seem to be faster than students with a high skill level. Furthermore, the use of interface 1 seems to result in lower times. 
+Lastly two interaction plots are created. These show that there are no obvious interaction effects. However, the previous statements are made based on the visualization of the data. No test have been used to underline these statements. Besides, any possible interaction effects cannot be reliably tested, because there is only one observation for each combination of factors.
+
+c)\newline 
+To test whether interface has a main effect on the time it takes to complete the task, an ANOVA was carried out with both interface and skill as independent variables. No interaction effect was taken into account. Results show that both interface, F(2,8)=7.82, p = 0.013, and skill, F(4,8)=6.21, p = 0.014, have a significant main effect. Therefore the search time is not equal for all of the interfaces. 
+To compute the estimated time it takes for a user with skill level 3 who uses interface 2 the summary of the ANOVA was used. This results in an estimated time of (0.5467 + 0.3133 + -0.1133) 20.7467.
+```{r include=FALSE}
+contrasts(data$skill) = contr.sum
+contrasts(data$interface) = contr.sum
+dataaov = lm(time~interface+skill,data=data)  # balanced so order doesnt matter
+summary(dataaov)
+```
+```{r, echo=FALSE}
+anova(dataaov)
+```
+
+d)\newline 
+The model assumptions were checked by looking at both the normality of the residuals and a plot of residuals values against the fitted values. The residuals seem to be normally distributed. This was confirmed by a Shapiro-Wilk normality test, W=0.93, p = 0.282. The plot of the residuals values against the fitted values shows that there is no systematic error.
+
+```{r, echo=FALSE}
+par(mfrow=c(1,2))
+qqnorm(residuals(dataaov), main = "QQ-plot of residuals"); plot(fitted(dataaov), residuals(dataaov), main = "Residuals against fitted values")
+```
+```{r include=FALSE}
+shapiro.test(residuals(dataaov))
+```
+
+e)\newline
+A non-parametric Friedman test was carried out to test whether there is an effect of interface. Results show that interface has a significant influence on the time it takes to complete the task, X^2(2)=6.4, p = 0.041.
+```{r, include=FALSE}
+friedman.test(time, interface, skill) # interface first because that is the effect we want
+```
+f)\newline
+When carrying out an analysis of variance with only the interface as independent variable, the results indicate that there is no significant effect of interface, F(2,12)=2.86, p = 0.096 on the time it takes to complete the task. It could make sense to carry out this test, however in the current context it is wrong. This is because earlier tests, as well as the visualization of the data indicate a significant effect of skill. Therefore, it is unwise to remove this factor from the analysis. If there was no effect of skill it would not matter if it was used as a factor in the analysis.
+```{r, include=FALSE}
+dataaov2 = lm(time~interface, data=data)
+anova(dataaov2)
+summary(dataaov2)
+```
+
+## Exercise 3
+a)\newline
+First, it is investigated whether the dependent variable milk production is normally distributed. According to the QQ-plot, histogram and boxplot it is assumed that the data is normally dsitributed. In addition, a Shapiro-Wilk-test is carried out (W = 0.954, p = 0.495), which supports this assumption.
+To test whether the type of feedingstuff has an effect on the milk production, an ordinary fixed effects model is carried out, with the treatment, order, period and id as independent variables. From this ANOVA it is concluded that there is a difference in milk production between the two treatments of 0.51 liter milk. However, this result is not significant (F = 0.109, p = 0.751), which indicates that there is no effect of type feedingstuff on the milk production.
+```{r, include=FALSE}
+cow = read.table('cow.txt', header=T)
+attach(cow)
+par(mfrow=c(1,3))
+qqnorm(milk); hist(milk); boxplot(milk);
+shapiro.test(milk)
+#not significant, so normally distributed
+```
+
+```{r include=FALSE}
+cow$id = factor(cow$id); cow$per = factor(cow$per)
+contrasts(cow$treatment) = contr.sum; contrasts(cow$per) = contr.sum
+contrasts(cow$id) = contr.sum; contrasts(cow$order) = contr.sum
+```
+```{r, echo=FALSE}
+cowaov=lm(milk~treatment+order+per+id,data=cow)
+anova(cowaov)
+```
+```{r, include=FALSE}
+summary(cowaov)
+treatment1 = 35.2938+0.2550
+treatment2 = 35.2938-0.2550
+difference = treatment1-treatment2
+```
+
+b)\newline
+A mixed effects model is carried out, to investigate if the type of feedingstuff has an effect on the milk production. Now, the effect of cow (id) is an 'random effect'. To get a p-value, another ANOVA is carried out, with this model and a model with the factor treatment left out. This resulted in p = 0.446.
+So, also in in this model is no effect of type feedingstuff on the milk production.
+
+```{r, include=FALSE}
+library(lme4)
+```
+```{r, echo=FALSE}
+cowaov1 = lmer(milk~treatment+order+per+(1|id),data=cow,REML=FALSE)
+cowaov2 = lmer(milk~order+per+(1|id),data=cow,REML=FALSE)
+anova(cowaov2 , cowaov1)
+```
+
+c)\newline
+The t-test resulted in p = 0.828. This shows that treatment does not have a significant effect on the milk production. This conclusion is compatible with the conclusion from question a. However, this t-test is not a valid test, because the independent variables order and period have a significant effect on milk production.
+```{r,include=FALSE}
+attach(cow)
+t.test(milk[treatment=="A"],milk[treatment=="B"],paired=TRUE)
+```
+\newpage
+
+## Exercise 4
+a)\newline
+The dataframe is created by first creating a column with the number of patients with nausea (180) and without (124). Next the column for medicin is created. This is done by repeating the type of medicin a specified number of times. The number of repetitions is equal to the number of patients that took a certain medicin and did not have nausea.
+```{r, include=FALSE}
+nausea = read.table(file="nauseatable.txt",header=TRUE)
+```
+```{r}
+nauseadf = data.frame(naus=c(rep('no', each=180), rep('yes', each=124)), 
+           medicin=c(rep('chlor', each=100), rep('pent100', each=32), rep('pent150', each=48),
+                     rep('chlor', each=52), rep('pent100', 35), rep('pent150', 37)))
+```
+```{r, echo=FALSE}
+attach(nauseadf)
+xtabs(~medicin+naus)
+```
+
+b)\newline
+To perform a permutation test, the labels were shuffled 1.000 times. After every shuffle the chi-value was computed and saved. If the null-hypothesis is true, then the chi-value of the original dataset would be a probable outcome. Therefore the chi-value from the original dataset was compared to the chi-values of the 1.000 permutations. The original chi-value was 6.62. Only 3.6% of the permuted chi-values were larger than 6.62. Therefore the null-hypothesis can be rejected, and the conclusion is that medicin and nausea are not independent. So difference medicins don't work equally well against nausea. 
+```{r}
+B = numeric(1000)
+for (i in 1:length(B)){
+  nauseadf2 = transform(nauseadf, medicin=sample(medicin))
+  B[i] = chisq.test(xtabs(~nauseadf2$medicin+nauseadf2$naus))[[1]]
+}
+chi_contingency = chisq.test(xtabs(~medicin+naus))[[1]]
+p_permutation = mean(B>chi_contingency)
+```
+
+c)\newline
+When performing a chi-square test for contingency tables, the outcome is similar. Medicin and reported nausea seem to be related, X^2(2)=6.62, p = 0.036. This makes sense, because the resulting chi-values of the permutations is more or less equal to the true chi-distribution with 2 degrees of freedom. This is illustrated by the histogram. With the permutation test, chi-values are computed under the assumption that the null-hypothesis is true. This results in the actual chi-distribution. Therefore, the p-values from permutation and contingency tables are very similar.
+
+```{r, echo=FALSE}
+par(mfrow=c(1,1)); hist(B, breaks = 20, main = "Chi-values of permutation-test", xlab = "Chi-values")
+```
+```{r, include= FALSE}
+p_contingency = chisq.test(xtabs(~medicin+naus))[[3]]
+```
+\newpage
+
+## Exercise 5
+a)\newline
+```{r, echo = FALSE}
+crimetable = read.table('expensescrime.txt', header = T)
+attach(crimetable)
+par(mfrow= c(2,3))
+qqnorm(expend); qqnorm(bad); qqnorm(crime); qqnorm(lawyers); qqnorm(employ); qqnorm(pop)
+par(mfrow= c(2,3))
+hist(expend); hist(bad); hist(crime); hist(lawyers); hist(employ); hist(pop)
+#to check collinearity
+pairs(crimetable[2:7])
+round(cor(crimetable[2:7]),2)
+```
+
+To inspect the distribution of the data and to find outliers, a QQ-plot and histogram were computed for all variables. In addition a pairwise plot of all variables is set up and the correlation between all variables is computed, this to check for the collinearity problem. As you can see in the QQ-plots and histograms, only the factor crime seems to be normally distributed. There also seems to be an outlier in the data. Many variables seem to be correlated with each other as well, which will result in a problem of collinearity. To fix these problems, the data was further inspected and the outlier (row 8, the data from state DC) was removed from the dataset and the variables expend, crime, lawyers and employ were divided by the population in order to normalize for the population size. The same graphs and correlationvalues were computed with the new data. Results can be seen below. It can be seen that the variables expend, lawyers and employ are distributed more normally. Furthermore, the correlations between variables are lower, which indicated less multicollinearity. This is not the case for variables bad and pop, so these variables will probably not be implemented in the same model. 
+```{r, echo=FALSE}
+#to check distribution
+crimetable2 = crimetable[-c(1,8),]
+crimetable2$expend = crimetable2$expend / crimetable2$pop
+crimetable2$lawyers = crimetable2$lawyers / crimetable2$pop
+crimetable2$crime = crimetable2$crime / crimetable2$pop
+crimetable2$employ = crimetable2$employ / crimetable2$pop
+# we see outlier row 8 -> remove
+attach(crimetable2)
+par(mfrow= c(2,3))
+qqnorm(expend); qqnorm(bad); qqnorm(crime); qqnorm(lawyers); qqnorm(employ); qqnorm(pop)
+par(mfrow= c(2,3))
+hist(expend); hist(bad); hist(crime); hist(lawyers); hist(employ); hist(pop)
+#to check collinearity
+pairs(crimetable2[2:7])
+round(cor(crimetable2[2:7]),2)
+```
+
+b)\newline
+First, the step-up method is used to find the optimal model. R2-values are computed for all independent variables seperately. The variable employ was first added to the model, because it had the highest R2-value amongst the independent variables. This process was repeated multiple times untill there were no signficiant predictors left. The final model included the independent variables employ and lawyers. The R2 for the step-up model was 0.691.
+Next, the step-down method is used to find an optimal model. All predictors were added to the model, after which the most insignificant predictor is removed. This was done multiple times untill only significant predictors were left in the model. The final model of the step-down method included employ, lawyers, crime and pop. The R2 for this model was 0.766.
+
+The step-up and step-down method yielded two different models. The step-up model had 2 explanatory variables and 69.1% explained variance. The step-down model had 4 explanatory variables and 76.6% explained variance. The increase in R2 in the step-down model is not big enough to compensate for the extra variables. Therefore, the smallest model is preferred due to simplicity, therefore the step-up model is chosen. The final model with the effects of the predictors is shown below.
+```{r, include=FALSE}
+attach(crimetable2)
+par(mfrow = c (1,1))
+boxplot(crimetable2)
+#step-up method
+summary(lm(expend~bad,data=crimetable2)) #r2 = 0.6964 #0.09194 
+summary(lm(expend~crime,data=crimetable2)) #r2 = 0.1119 #0.03205
+summary(lm(expend~lawyers,data=crimetable2)) #r2 = 0.9373 #0.4136
+summary(lm(expend~employ,data=crimetable2)) # r2 = 0.954 #0.6366
+summary(lm(expend~pop,data=crimetable2)) # r2 = 0.9073 #0.1399
+#highest r2 = employ, and add all the others and look for highest again
+summary(lm(expend~employ+lawyers,data=crimetable2)) #r2= 0.9632 and sign.#0.6907 and sign
+summary(lm(expend~employ+bad,data=crimetable2)) # r2 0.9551 and not sign. #not sign
+summary(lm(expend~employ+crime,data=crimetable2)) #r2 = 0.9551 and not sign.#not sign
+summary(lm(expend~employ+pop,data=crimetable2)) #r2 = 0.9543 and not sign.#not sign
+#highest R2 = lawyers and only significant, so add this one. 
+summary(lm(expend~employ+lawyers+bad,data=crimetable2)) #r2= 0.9632 and sign.#0.6907 and sign
+summary(lm(expend~employ+lawyers+crime,data=crimetable2)) # r2 0.9551 and not sign. #not sign
+summary(lm(expend~employ+lawyers+pop,data=crimetable2)) #r2 = 0.9551 and not sign.#not sign
+#new: stop with employ and lawyers cause nothing significant
+```
+```{r, echo=FALSE}
+lm(expend~employ+lawyers,data=crimetable2)
+```
+```{r, include=FALSE}
+attach(crimetable2)
+#step-down method
+summary(lm(expend~bad+crime+lawyers+employ+pop,data=crimetable2))
+#crime is most insiginificant, so take out #new: bad most insignificant
+summary(lm(expend~crime+lawyers+employ+pop,data=crimetable2))
+#pop out #new: everything significant! stop!
+summary(lm(expend~bad+lawyers+employ,data=crimetable))
+#bad out
+summary(lm(expend~lawyers+employ,data=crimetable))
+#significant, same answer as step-up
+```
+
+c)\newline
+To check the model assumptions, multiple graphs were plotted. First, the scatter plot of the expend against all independent variables is inspected in question a. Secondly, a scatter plot of the residuals against each independent variable  
+```{r, echo=FALSE}
+#2.Scatter plot of residuals against each Xk in the model separately.
+par(mfrow = c (1,2))
+plot(employ, residuals(lm(expend~employ+lawyers,data=crimetable2)), main = "Residuals against employ", ylab = "Residuals")
+plot(lawyers, residuals(lm(expend~employ+lawyers,data=crimetable2)), main = "Residuals against lawyer", ylab = "Residuals")
+```
+
+```{r, echo=FALSE}
+#3.Added variable plot of residuals of Xj against residuals of Y with omitted Xj.
+#DOES ORDER MATTER?
+par(mfrow = c (2,3))
+#bad
+x=residuals(lm(bad~crime+lawyers+employ+pop)) 
+y=residuals(lm(expend~crime+lawyers+employ+pop)) 
+plot(x,y,main="Added variable plot for bad", xlab="residual of bad", ylab="residual of expend")
+#crime
+x=residuals(lm(crime~lawyers+employ+pop+bad)) 
+y=residuals(lm(expend~bad+lawyers+employ+pop)) 
+plot(x,y,main="Added variable plot for crime", xlab="residual of crime", ylab="residual of expend")
+#lawyers
+x=residuals(lm(lawyers~crime+employ+pop+bad)) 
+y=residuals(lm(expend~bad+crime+employ+pop)) 
+plot(x,y,main="Added variable plot for lawyers", xlab="residual of lawyers", ylab="residual of expend")
+#employ
+x=residuals(lm(employ~lawyers+crime+pop+bad)) 
+y=residuals(lm(expend~bad+lawyers+crime+pop)) 
+plot(x,y,main="Added variable plot for employ", xlab="residual of employ", ylab="residual of expend")
+#pop
+x=residuals(lm(pop~lawyers+employ+crime+bad)) 
+y=residuals(lm(expend~bad+lawyers+employ+crime)) 
+plot(x,y,main="Added variable plot for pop", xlab="residual of pop", ylab="residual of expend")
+```
+
+```{r, echo=FALSE}
+#4.Scatter plot of residuals against each X knot inthe model separately. #plot(residuals(bodyfatlm),Triceps)> plot(residuals(bodyfatlm),Midarm)
+expendlm = lm(expend~lawyers+employ,data=crimetable2)
+par(mfrow = c(1,3))
+plot(residuals(expendlm), bad)
+plot(residuals(expendlm), crime)
+plot(residuals(expendlm), pop)
+```
+```{r, echo=FALSE}
+#5.Scatter plot of residuals againstY(andˆY).> 
+par(mfrow=c(1,2))
+plot(residuals(expendlm),fitted(expendlm))
+qqnorm(residuals(expendlm))
+```
+
+```{r, include=FALSE}
+shapiro.test(residuals(expendlm))
+```
+
