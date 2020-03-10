@@ -92,8 +92,10 @@ par(mfrow=c(1,2)); hist(time); qqnorm(time)
 par(mfrow=c(1,2))
 boxplot(time~skill, main = "Effect of skill"); boxplot(time~interface, main = "Effect of interface")
 par(mfrow=c(1,2))
-interaction.plot(skill, interface, time, col = c('red', 'green', 'blue'), main = "Skill vs. interface")
+interaction.plot(skill, interface, time, col = c('red', 'green', 'blue'), main = "Skill vs. interface", legend=F)
+legend(3, 18, legend=c("int. 1", "int. 2", "int.3"),col=c("red","green", "black"), lty=1:2, cex=0.6)
 interaction.plot(interface, skill, time, col = c('red', 'green', 'blue', 'yellow', 'black'), main = "Interface vs. skill")
+legend(2,5, 20, legend=c("1", "2", "3", "4","5"),col=c("red","green","blue","yellow", "black"), lty=1:2, cex=0.6)
 ```
 
 First the distribution of the dependent variable is shown in a histogram and QQ-plot. The data looks normally distributed. Next two boxplots are created to visualize the effect that the independent variables skill and interface have on the time required to finish the task. Overall the students with a lower skill level (better skills) seem to be faster than students with a high skill level. Furthermore, the use of interface 1 seems to result in lower times. 
@@ -217,30 +219,29 @@ p_permutation = mean(B>chi_contingency)
 c)\newline
 When performing a chi-square test for contingency tables, the outcome is similar. Medicin and reported nausea seem to be related, X^2(2)=6.62, p = 0.036. This makes sense, because the resulting chi-values of the permutations is more or less equal to the true chi-distribution with 2 degrees of freedom. This is illustrated by the histogram. With the permutation test, chi-values are computed under the assumption that the null-hypothesis is true. This results in the actual chi-distribution. Therefore, the p-values from permutation and contingency tables are very similar.
 
-```{r, echo=FALSE}
+```{r, fig1, fig.height = 3, fig.width = 5, echo=FALSE}
 par(mfrow=c(1,1)); hist(B, breaks = 20, main = "Chi-values of permutation-test", xlab = "Chi-values")
 ```
 ```{r, include= FALSE}
 p_contingency = chisq.test(xtabs(~medicin+naus))[[3]]
 ```
-\newpage
-
 ## Exercise 5
 a)\newline
+To inspect the distribution of the data and to find outliers, a QQ-plot and histogram (not shown) were computed for all variables. In addition a pairwise plot of all variables is set up and the correlation between all variables is computed, this to check for the collinearity problem.
+
 ```{r, echo = FALSE}
 crimetable = read.table('expensescrime.txt', header = T)
 attach(crimetable)
 par(mfrow= c(2,3))
-qqnorm(expend); qqnorm(bad); qqnorm(crime); qqnorm(lawyers); qqnorm(employ); qqnorm(pop)
-par(mfrow= c(2,3))
-hist(expend); hist(bad); hist(crime); hist(lawyers); hist(employ); hist(pop)
+qqnorm(expend); qqnorm(bad); qqnorm(crime)
+qqnorm(lawyers); qqnorm(employ); qqnorm(pop)
 #to check collinearity
 pairs(crimetable[2:7])
 round(cor(crimetable[2:7]),2)
 ```
 
-To inspect the distribution of the data and to find outliers, a QQ-plot and histogram were computed for all variables. In addition a pairwise plot of all variables is set up and the correlation between all variables is computed, this to check for the collinearity problem. As you can see in the QQ-plots and histograms, only the factor crime seems to be normally distributed. There also seems to be an outlier in the data. Many variables seem to be correlated with each other as well, which will result in a problem of collinearity. To fix these problems, the data was further inspected and the outlier (row 8, the data from state DC) was removed from the dataset and the variables expend, crime, lawyers and employ were divided by the population in order to normalize for the population size. The same graphs and correlationvalues were computed with the new data. Results can be seen below. It can be seen that the variables expend, lawyers and employ are distributed more normally. Furthermore, the correlations between variables are lower, which indicated less multicollinearity. This is not the case for variables bad and pop, so these variables will probably not be implemented in the same model. 
-```{r, echo=FALSE}
+As you can see in the QQ-plots and histograms, only the factor crime seems to be normally distributed. There also seems to be an outlier in the data. Many variables seem to be correlated with each other as well, which will result in a problem of collinearity. To fix these problems, the data was further inspected and the outlier (row 8, the data from state DC) was removed from the dataset and the variables expend, crime, lawyers and employ were divided by the population in order to normalize for the population size. The same graphs and correlationvalues were computed with the new data. Results can be seen below. It can be seen that the variables expend, lawyers and employ are distributed more normally. Furthermore, the correlations between variables are lower, which indicated less multicollinearity. This is not the case for variables bad and pop, so these variables will probably not be implemented in the same model. 
+```{r, include=FALSE}
 #to check distribution
 crimetable2 = crimetable[-c(1,8),]
 crimetable2$expend = crimetable2$expend / crimetable2$pop
@@ -249,15 +250,17 @@ crimetable2$crime = crimetable2$crime / crimetable2$pop
 crimetable2$employ = crimetable2$employ / crimetable2$pop
 # we see outlier row 8 -> remove
 attach(crimetable2)
+```
+```{r, echo=FALSE}
 par(mfrow= c(2,3))
 qqnorm(expend); qqnorm(bad); qqnorm(crime); qqnorm(lawyers); qqnorm(employ); qqnorm(pop)
-par(mfrow= c(2,3))
-hist(expend); hist(bad); hist(crime); hist(lawyers); hist(employ); hist(pop)
 #to check collinearity
 pairs(crimetable2[2:7])
+```
+\newpage
+```{r, echo=FALSE}
 round(cor(crimetable2[2:7]),2)
 ```
-
 b)\newline
 First, the step-up method is used to find the optimal model. R2-values are computed for all independent variables seperately. The variable employ was first added to the model, because it had the highest R2-value amongst the independent variables. This process was repeated multiple times untill there were no signficiant predictors left. The final model included the independent variables employ and lawyers. The R2 for the step-up model was 0.691.
 Next, the step-down method is used to find an optimal model. All predictors were added to the model, after which the most insignificant predictor is removed. This was done multiple times untill only significant predictors were left in the model. The final model of the step-down method included employ, lawyers, crime and pop. The R2 for this model was 0.766.
@@ -301,7 +304,7 @@ summary(lm(expend~lawyers+employ,data=crimetable))
 ```
 
 c)\newline
-To check the model assumptions, multiple graphs were plotted. First, the scatter plot of the expend against all independent variables is inspected in question a. Secondly, a scatter plot of the residuals against each independent variable  
+The model assumptions were checked. (1) The plots of the dependent variables against the indpenedent variables are shown in a. No indications of nonlinear relationships between expend and the independent variables are found. (2) The residuals of the model are plotted against the two factors of the model. The residuals do not show a pattern or systematic error. (3) Next partial regression plots are produced where for each predictor a model is created without that predictor. The residuals of that model are plotted against the predictor that was omitted. The slopes in these plots reflect the regression coefficient of the variables that were omitted. (4) The residuals of the model are plotted against the factors that were not included in the model. No linear relations between the residuals and the factors are visible in the plots. Lastly, (5) the QQ-plot of the residuals and (6) a plot of the residuals versus the fitted values are computed. The QQ-plot shows that the residuals are normally distributed, which is confirmed by a Shapiro-Wilk test, W = 0.97, p = .287. No systematic errors or patterns are visible in plot of the residual versus fitted values.
 ```{r, echo=FALSE}
 #2.Scatter plot of residuals against each Xk in the model separately.
 par(mfrow = c (1,2))
@@ -312,42 +315,30 @@ plot(lawyers, residuals(lm(expend~employ+lawyers,data=crimetable2)), main = "Res
 ```{r, echo=FALSE}
 #3.Added variable plot of residuals of Xj against residuals of Y with omitted Xj.
 #DOES ORDER MATTER?
-par(mfrow = c (2,3))
-#bad
-x=residuals(lm(bad~crime+lawyers+employ+pop)) 
-y=residuals(lm(expend~crime+lawyers+employ+pop)) 
-plot(x,y,main="Added variable plot for bad", xlab="residual of bad", ylab="residual of expend")
-#crime
-x=residuals(lm(crime~lawyers+employ+pop+bad)) 
-y=residuals(lm(expend~bad+lawyers+employ+pop)) 
-plot(x,y,main="Added variable plot for crime", xlab="residual of crime", ylab="residual of expend")
+par(mfrow = c (1,2))
 #lawyers
 x=residuals(lm(lawyers~crime+employ+pop+bad)) 
 y=residuals(lm(expend~bad+crime+employ+pop)) 
-plot(x,y,main="Added variable plot for lawyers", xlab="residual of lawyers", ylab="residual of expend")
+plot(x,y,main="Added variable plot for lawyers", xlab="residual of lawyers", ylab="residual of expend", cex=0.7)
 #employ
 x=residuals(lm(employ~lawyers+crime+pop+bad)) 
 y=residuals(lm(expend~bad+lawyers+crime+pop)) 
-plot(x,y,main="Added variable plot for employ", xlab="residual of employ", ylab="residual of expend")
-#pop
-x=residuals(lm(pop~lawyers+employ+crime+bad)) 
-y=residuals(lm(expend~bad+lawyers+employ+crime)) 
-plot(x,y,main="Added variable plot for pop", xlab="residual of pop", ylab="residual of expend")
+plot(x,y,main="Added variable plot for employ", xlab="residual of employ", ylab="residual of expend", cex=0.7)
 ```
 
 ```{r, echo=FALSE}
 #4.Scatter plot of residuals against each X knot inthe model separately. #plot(residuals(bodyfatlm),Triceps)> plot(residuals(bodyfatlm),Midarm)
 expendlm = lm(expend~lawyers+employ,data=crimetable2)
 par(mfrow = c(1,3))
-plot(residuals(expendlm), bad)
-plot(residuals(expendlm), crime)
-plot(residuals(expendlm), pop)
+plot(bad, residuals(expendlm), main='Bad')
+plot(crime, residuals(expendlm), main='Crime')
+plot(pop, residuals(expendlm), main='Pop')
 ```
 ```{r, echo=FALSE}
 #5.Scatter plot of residuals againstY(andˆY).> 
 par(mfrow=c(1,2))
-plot(residuals(expendlm),fitted(expendlm))
 qqnorm(residuals(expendlm))
+plot(fitted(expendlm), residuals(expendlm))
 ```
 
 ```{r, include=FALSE}
