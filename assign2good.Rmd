@@ -166,9 +166,9 @@ contrasts(cow$id) = contr.sum; contrasts(cow$order) = contr.sum
 ```{r}
 cowaov=lm(milk~treatment+order+per+id,data=cow)
 anova(cowaov)
-summary(cowaov)
 ```
 ```{r, include=FALSE}
+summary(cowaov)
 treatment1 = 46.690+0.510
 treatment2 = 46.690-0.510
 difference = treatment1-treatment2
@@ -182,17 +182,14 @@ library(lme4)
 ```
 ```{r}
 cowaov1 = lmer(milk~treatment+order+per+(1|id),data=cow,REML=FALSE)
-summary(cowaov1)
 cowaov2 = lmer(milk~order+per+(1|id),data=cow,REML=FALSE)
 anova(cowaov2 , cowaov1)
-# no significant chisquare, no effect of treatment
 ```
-A mixed effects model is carried out, to investigate if the type of feedingstuff has an effect on the milk production. Now, the effect of cow (i.e. id) is an 'random effect'. This ANOVA results in ...
-To get a Chisquare-value, another ANOVA is carried out, with this model and a model with the factor treatment left out. This resulted in [give chisquare]
+A mixed effects model is carried out, to investigate if the type of feedingstuff has an effect on the milk production. Now, the effect of cow (i.e. id) is an 'random effect'. To get a Chisquare-value, another ANOVA is carried out, with this model and a model with the factor treatment left out. This resulted in [give chisquare]
 So, also in this case there is no effect of type feedingstuff on the milk production.
 
 c)\newline
-```{r,echo=FALSE}
+```{r,include=FALSE}
 attach(cow)
 t.test(milk[treatment=="A"],milk[treatment=="B"],paired=TRUE)
 ```
