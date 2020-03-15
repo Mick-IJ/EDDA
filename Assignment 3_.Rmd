@@ -7,7 +7,7 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(fig.width=6, fig.height=4, fig.align = "center")
+knitr::opts_chunk$set(fig.width=6, fig.height=3, fig.align = "center")
 library(knitr)
 ```
 
@@ -80,7 +80,7 @@ summary(lm(loglongevity~activity+thorax))$r.squared
 e)\newline
 Normality and heteroscedasticity are checked by inspecting the normality of residuals (QQ-plot) and the relation between the estimates and residuals (fitted vs. residuals plot). These are computed for the ANCOVA with thorax length and the activity group as independent variables. The residuals look normally distributed. This is also confirmed by a Shapiro-Wilk normality test, W = 0.97, p = .057. The largest part of the range of fitted values show no pattern with respect to the residuals. However, the lowest fitted values all seem to be underestimating the actual values. This is not a big problem since the lowest fitted values also have the lowest probability of occuring.
 ```{r, echo=FALSE}
-par(mfrow=c(2,2))
+par(mfrow=c(1,2))
 qqnorm(residuals(loglongaov2), main = "QQ-plot residuals")
 plot(fitted(loglongaov2), residuals(loglongaov2), main = "Residuals against fited values")
 ```
@@ -182,3 +182,74 @@ Fisher's exact test for 2x2-tables is the wrong test to use given the experiment
 g)\newline
 With a logistic regression there is a lot of flexibility in choosing the predictors.
 In a Fisher's exact test for 2x2-tables the p-value can be computed exactly.
+
+
+
+## Exercise 3
+
+
+```{r include=FALSE}
+africa = read.table("africa.txt", header = T)
+africa$pollib = as.factor(africa$pollib)
+attach(africa)
+contrasts(pollib) = contr.sum
+```
+
+
+a)\newline
+A poisson regression is performed, with the number of succesful military coups (miltcoup) as dependent variable. The other variables in the dataset are used as explanatory variables. However, it must be noted that the dependent variable does not seem to stem from a poisson distribution. This is because the mean (=1.58) is not similar to the variance (=3.11). The distribution of the used variables as well as the relation between independent variables are visually inspected. No indications for multicolinearity have been found. A few outliers are present for the variables parties, population size, and size. These outliers were not removed due influence the removal would have on the sample size.
+The rersults of the poisson regression show that the number of years the country was ruled by a military oligarchy (oligarchy), Z = 2.05, p = .040, the number of legal political parties (parties), z = 2.80, p = .005, and the political liberalization (pollib), have a significant effect on the number of military coups. Oligarchy and parties have a positive relation with miltcoup. If the political liberalization is that there are no civil rights for political expression the estimated number of succesful military coups is also larger, Z = 2.17, p = .030. Furthermore, if there are full civil rights the estimated miltcoup is lower, Z = -2.69, p = .007.
+```{r include=FALSE}
+par(mfrow=c(2,4))
+hist(miltcoup); hist(oligarchy)
+hist(parties); hist(pctvote)
+hist(popn); hist(size)
+hist(numelec); hist(numregim)
+par(mfrow=c(1,1)); pairs(africa[-3])
+
+mean(miltcoup)
+var(miltcoup)
+
+africalm = glm(miltcoup~oligarchy+pollib+parties+pctvote+popn+size+numelec+numregim, family=poisson)
+summary(africalm)
+
+pollib2 = as.numeric(pollib)
+pollib2[pollib2 == 1] <- 4; pollib2[pollib2 == 3] <- 1; pollib2[pollib2 == 4] <- 3
+pollib2 = as.factor(pollib2); contrasts(pollib2) = contr.sum
+
+summary(glm(miltcoup~oligarchy+pollib2+parties+pctvote+popn+size+numelec+numregim, family=poisson))
+```
+```{r fig3, fig.height = 4, fig.width = 6, echo=FALSE}
+plot(log(fitted(africalm)), residuals(africalm), main="Residuals against log of fitted values")
+```
+
+
+b)\newline
+Since the number of independent variables is 8 and most of them are not significant the step down approach was used to reduce the number of predictors. First, the model with all predictors was inspected. The variable "numelec" was removed, because it was the least significant. This was repeated several times. In the end the model consisted of "oligarchy", "pollib", and "parties", which were the only significant predictors in the complete model aswell. The relation with the dependent variable remains the same as explained in question a. The residuals were plotted against the logarithm of the fitted values. No pattern was found in this plot. Lastly, the residuals of the model were plotted against all of the predictors, to investigate if any patterns emerge. In none of the plots a pattern was found that would indicate the need for a transformation (for the included variables) or inclusion (for the excluded variables).
+```{r include=FALSE}
+summary(glm(miltcoup~oligarchy+pollib+parties+pctvote+popn+size+numelec+numregim, family=poisson, data = africa))
+#numelec is most insiginificant, so take out 
+summary(glm(miltcoup~oligarchy+pollib+parties+pctvote+popn+size+numregim, family=poisson, data = africa))
+#numregim out 
+summary(glm(miltcoup~oligarchy+pollib+parties+pctvote+popn+size, family=poisson, data = africa))
+#size out
+summary(glm(miltcoup~oligarchy+pollib+parties+pctvote+popn, family=poisson, data = africa))
+#popn out
+summary(glm(miltcoup~oligarchy+pollib+parties+pctvote, family=poisson, data = africa))
+#pctvote out
+summary(glm(miltcoup~oligarchy+pollib+parties, family=poisson, data = africa))
+#all significant except intercept
+```
+```{r fig4, fig.height = 4, fig.width = 6, echo=FALSE}
+final_model = glm(miltcoup~oligarchy+pollib+parties, family=poisson, data = africa)
+plot(log(fitted(final_model)), residuals(final_model), main="Residuals against log of fitted values")
+```
+```{r include=FALSE}
+plot(oligarchy, residuals(final_model))
+plot(parties, residuals(final_model))
+plot(numelec, residuals(final_model))
+plot(numregim, residuals(final_model))
+plot(size, residuals(final_model))
+plot(popn, residuals(final_model))
+plot(pctvote, residuals(final_model))
+```
