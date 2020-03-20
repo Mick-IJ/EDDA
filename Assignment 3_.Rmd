@@ -25,8 +25,8 @@ contrasts(activity) = contr.sum
 
 
 a)\newline
-To investigate whether sexual activity influences longevity an one-way ANOVA was carried out, where the activity groups are the independent variable and the log of the longevity was the dependent variable. The group averages are graphically shown in the boxplot below. Results show that activity has a significant effect F(2, 72) = 19.42, p < .000. on the longevity.
-Post-hoc tests (TukeyHSD) indicated that the fruitflies in the high sexual activity group lived significantly shorter (M = 3.60) than the fruitflies in the isolated (M = 4.12, p < .000) and low (M = 4.00, p < .000) activity groups. No group differences were found between the low activity and isolated groups, p = .359.
+To investigate whether sexual activity influences longevity an one-way ANOVA was carried out, where the activity groups are the independent variable and the log of the longevity was the dependent variable. The group averages are graphically shown in the boxplot below. Results show that activity has a significant effect F(2, 72) = 19.42, p < .000 on the loglongevity.
+Post-hoc tests (TukeyHSD) indicated that the fruitflies in the high sexual activity group lived significantly shorter (M = 3.60) than the fruitflies in the isolated (M = 4.12, p < .000) and low (M = 4.00, p < .000) activity groups. No group differences were found between the low activity and isolated groups, p = .359. The mean values reported here are still the logarithm of longevity. The actual longevity (in days) is calculated by $e^{value}$, which is $e^{3.60} = 36.60$ for the high sexual activity group, $e^{4.12} = 61.56$ for the isolated, and $e^{4.00} = 54.60$ for the low activity groups.
 ```{r, fig1, fig.height = 4, fig.width = 4, echo=FALSE} 
 boxplot(loglongevity~activity, main = "Boxplot activities")
 ```
@@ -40,8 +40,8 @@ predict(loglongaov, newdata=data.frame(activity=c("isolated","high", "low")))
 
 
 b)\newline
-Thorax length will be added as an explanatory variable in the previous ANOVA, thus making it an ANCOVA. Both thorax length, F(1, 71) = 132.2, p < .000, and the activity groups, F(2, 71) = 25.7, p < .000, have a significant effect on the log of the longevity. The effect of sexual activity is the same as in the previous question.
-The fruitflies in the high condition live significantly longer than the fruitflies in the other two conditions. The estimated lifespan for a fruitfly with an average thorax for each group is 3.67 (high), 4.09 (isolated), and 3.96 (low).
+Thorax length will be added as an explanatory variable in the previous ANOVA, thus making it an ANCOVA. Both thorax length, F(1, 71) = 132.2, beta = 2.98, p < .000, and the activity groups, F(2, 71) = 25.7, p < .000, have a significant effect on the log of the longevity. Posthoc tests showed that the effect of sexual activity is the same as in the previous question.
+The fruitflies in the high condition live significantly longer than the fruitflies in the other two conditions. The estimated lifespan for a fruitfly with an average thorax length (M = 0.82) for each group is $e^{3.67} = 39.25$ (high), $e^{4.09} = 59.74$ (isolated), and $e^{3.96} = 52.46$ (low).
 ```{r, include=FALSE}
 loglongaov2 = aov(loglongevity~thorax+activity)
 summary(loglongaov2)
@@ -53,7 +53,7 @@ predict(loglongaov2, newdata=data.frame(thorax=rep(mean(thorax), 3), activity=c(
 
 c)\newline
 To investigate the influence of thorax length on the longevity of the fruitflies, the previous ANCOVA was carried out once more. Only the interaction between thorax length and the sexual activity group was added as an explanatory variable. The results of the analysis show that the interaction is not significant, F(2, 69) = 1.93, p = 0.154. The graph below shows the estimates for each group depending on the thorax length. Since the interaction is not significant it can be concluded that the plotted lines are more or less parallel. Because of the insigificance of the interaction, the interaction term was removed from the model. This results in an exact copy of the ANCOVA in question b. 
-Thorax length has a significant and positive relation with the log of longevity. This means that fruitflies with a longer thorax length live longer than fruitflies with a shorter thorax length.
+In this model thorax length had a significant and positive relation, F(1, 71) = 132.2, beta = 2.98, p < .000, with the log of longevity. This means that fruitflies with a longer thorax length live longer than fruitflies with a shorter thorax length.
 ```{r include=FALSE}
 loglongaov3 = aov(loglongevity~activity*thorax)
 summary(loglongaov3)
@@ -120,10 +120,10 @@ contrasts(psi) = contr.sum
 
 
 a)\newline
-The data for the personalized system of instruction is studied by looking at (1) the histogram of GPA, (2) the distribution of GPA for the groups that received psi or not, and (3) the distribution of GPA for the catagories pass or fail. Furthermore, a crosstab (table 1) is computed for the two factors. GPA seems to be normally distributed. The GPA of two groups of students is similar, although the group that received psi has a slightly higher GPA. The third plot indicates that the students who passed the assignment have a higher GPA than those who did not. The crosstabs show that there seems to be a dependence between psi and passing the assignment. This is because the majority of the students who did not receive psi did not pass the assignment, while on the other hand about half of the students passed the assignment when they did receive psi.
+The data for the personalized system of instruction is studied by looking at (1) the qq-plot of GPA, (2) the distribution of GPA for the groups that received psi or not, and (3) the distribution of GPA for the categories pass or fail. Furthermore, a crosstab (table 1) is computed for the two factors. GPA seems to be normally distributed. The GPA of two groups of students is similar, although the group that received psi has a slightly higher GPA. The GPA should be distributed similarly between the two psi groups, otherwise GPA might influence the outcome of the experiment in an undesirable manner. The third plot indicates that the students who passed the assignment have a higher GPA than those who did not. The crosstabs show that there seems to be a dependence between psi and passing the assignment. This is because the majority of the students who did not receive psi did not pass the assignment, while on the other hand about half of the students passed the assignment when they did receive psi.
 ```{r echo=FALSE, results="asis"}
 par(mfrow=c(1,3))
-qqnorm(gpa)
+qqnorm(gpa, main='QQ-plot of GPA')
 boxplot(gpa~psi, xlab='psi', main='Mean GPA')
 boxplot(gpa~passed, xlab='Pass', main='Mean GPA')
 kable(matrix(xtabs(~passed+psi,data=data), nrow=2, dimnames=list(c("fail", "pass"), c("no psi", "psi"))), caption = "Observed frequencies")
@@ -131,7 +131,7 @@ kable(matrix(xtabs(~passed+psi,data=data), nrow=2, dimnames=list(c("fail", "pass
 
 
 b)\newline
-To investigate the effect of psi, a logistic regression is carried out with GPA and psi as predictors and pass/fail as outcome. Both GPA and psi have a significant effect. A higher GPA leads to a higher probability of passing the assignment, Z = 2.51, p = .012. Furthermore, receiving psi also increases the likelihood of passing the assignment, Z = -2.45, p = .024. It can be concluded that psi works.
+To investigate the effect of psi, a logistic regression is carried out with GPA and psi as predictors and pass/fail as outcome. Both GPA and psi have a significant effect. A higher GPA leads to a higher probability of passing the assignment, $\beta$ = 3.06, Z = 2.51, p = .012. Furthermore, receiving psi also increases the likelihood of passing the assignment,$\beta$ = 1.17, Z = 2.45, p = .024. It can be concluded that psi works.
 ```{r include=FALSE}
 aov = glm(passed~gpa+psi, family=binomial)
 summary(aov)
@@ -150,14 +150,14 @@ predict(aov, newdata=data.frame(psi=factor(c(0, 1)), gpa=c(3,3)), type="response
 
 
 d)\newline
-Receiving psi increases the odds of passing the assignment by a factor $e^{2*1.17} = 10.36$. This is not dependent on gpa, since gpa and psi are independent of eachother.
+Receiving psi increases the odds of passing the assignment by a factor $e^{1.17}/e^{-1.17} = 10.38$. Where the nominator and denominator are the odds with psi and odds without psi respectively. The number 10.38 indicates that students who receive psi are 10.38 times more likely to pass the assignment than those who did not receive psi. This is not dependent on gpa, since gpa and psi are independent of eachother.
 ```{r include=FALSE}
-exp(2.338)
+exp(1.17)/exp(-1.17)
 ```
 
 
 e)\newline
-Table 2 shows the frequency of students who did or didn't receive psi in combination with whether they passed or not. The 15 are the number of students who did not receive psi and did not improve (or failed the assignment). The 8 are the number of students who did receive psi, but did not improve. A Fisher's exact test for 2x2-tables is carried out to assert the dependence of psi and the outcome of the assignment. The results reveal a significant dependence, p = 0.027. This means that the observed frequencies differ significantly from the expected frequenceis (table 3). When the contribution of each cell to the test statistic is inspected it becomes clear that the number of students that passed the assignment when receiving psi is much larger than expected. Thus it can be concluded that psi works.
+Table 2 shows the frequency of students who did or didn't receive psi in combination with whether they passed or not. The 15 are the number of students who did not receive psi and did not improve (or failed the assignment). The 8 are the number of students who did receive psi, but did not improve. A Fisher's exact test for 2x2-tables is carried out to assert the dependence of psi and the outcome of the assignment. The results reveal a significant dependence, p = 0.027. This means that the observed frequencies differ significantly from the expected frequencies (table 3). When the contribution of each cell to the test statistic is inspected it becomes clear that the number of students that passed the assignment when receiving psi is much larger than expected. Thus it can be concluded that psi works.
 ```{r echo=FALSE}
 the_matrix = matrix(c(3,15,8,6),nrow=2, dimnames=list(c("pass", "fail"), c("no psi", "psi")))
 kable(the_matrix, caption="Observed frequencies")
